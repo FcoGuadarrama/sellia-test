@@ -45,8 +45,9 @@ const handleRegister = async () => {
     })
 
     localStorage.setItem('token', response.data.token)
+    localStorage.setItem('userId', response.data.userId)
 
-    await router.push('/dashboard')
+    await router.push('/')
   } catch (error) {
     console.error('Error en el registro:', error.response?.data?.error || error.message)
     alert(error.response?.data?.error || error.message)

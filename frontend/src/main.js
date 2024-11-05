@@ -6,7 +6,7 @@ import Aura from '@primevue/themes/aura';
 import { definePreset } from '@primevue/themes';
 import router from './router'
 import store from "./store.js";
-
+import axios from "axios";
 
 
 const app = createApp(App)
@@ -28,6 +28,18 @@ const MyPreset = definePreset(Aura, {
         }
     }
 });
+
+axios.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`; // Agrega el token en el encabezado
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    });
 
 app.use(router);
 app.use(store);

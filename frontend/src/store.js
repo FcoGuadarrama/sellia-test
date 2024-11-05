@@ -4,57 +4,73 @@ import axios from 'axios';
 
 const socket = io("http://localhost:3000");
 
+
+
 const store = createStore({
     state: {
-        messages: {}, socket,
+        messages: [],
+        socket,
         username: '',
+        chatExists: false,
         chats: [],
+        users: [],
         currentChat: null,
     },
     mutations: {
         setUsername(state, username) {
             state.username = username;
         },
-        addMessage(state, { chatId, message }) {
-            if (!state.messages[chatId]) {
-                state.messages[chatId] = [];
-            }
-            state.messages[chatId].push(message);
-        },
-        setMessages(state, { chatId, messages }) {
-            state.messages[chatId] = messages;
-        },
         setChats(state, chats) {
             state.chats = chats;
+        },
+        setUsers(state, users) {
+            state.users = users;
+        },
+        setChatExists(state, chatExists) {
+            state.chatExists = chatExists;
         },
         addChat(state, chat) {
             state.chats.push(chat);
         },
-        setCurrentChat(state, chatId) {
-            state.currentChat = chatId; // Establece el chat actual
+        setCurrentChat(state, chat) {
+            state.currentChat = chat;
+        },
+        setMessages(state, messages) {
+            state.messages = messages;
+        },
+        clearMessages(state) {
+            state.messages = [];
+        },
+        addMessage(state, message) {
+            state.messages.push(message);
         }
     },
     actions: {
-        fetchMessages({ commit }, chatId) {
-            axios.get(`http://localhost:3000/api/chats/${chatId}/messages`)
-                .then(response => {
-                    commit('setMessages', { chatId, messages: response.data });
-                })
-                .catch(error => {
-                    console.error("Error al obtener mensajes:", error);
-                });
+        async fetchMessages({ commit }, chatId) {
+            commit('clearMessages');
+            try {
+                const response = await axios.get(`http://localhost:3000/api/chats/${chatId}/messages`);
+                const messages = response.data;
+                commit('setMessages', messages);
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+            }
         },
-        sendMessage({ state }, { chatId, message }) {
-            const data = { chatId, username: state.username, message };
-            socket.emit("sendMessage", data);
+        async sendMessage({ commit }, { chatId, message, sender }) {
+            try {
+                const response = await axios.post("http://localhost:3000/api/messages", { chatId, message, sender });
+                commit('addMessage', response.data);
+            } catch (error) {
+                console.error("Error al enviar mensaje:", error);
+            }
         },
-        fetchChats({ commit }) {
-            axios.get("http://localhost:3000/api/chats")
+        fetchChats({ commit }, userId) {
+            axios.get(`http://localhost:3000/api/chats?userId=${userId}`)
                 .then(response => {
                     commit('setChats', response.data);
                 })
                 .catch(error => {
-                    console.error("Error al obtener chats:", error);
+                    console.error("Error al obtener chats:", error.response ? error.response.data : error.message);
                 });
         },
         createChat({ commit }, participants) {
@@ -70,7 +86,24 @@ const store = createStore({
         selectChat({ commit }, chatId) {
             commit('setCurrentChat', chatId); // Establece el chat actual
             commit('fetchMessages', chatId); // Opcional: obtener mensajes al seleccionar el chat
-        }
+        },
+        fetchUsersToChatWith({ commit }) {
+            axios.get('http://localhost:3000/api/users')
+                .then(response => {
+                    commit('setUsers', response.data)
+                }).catch(error => {
+                    console.error("Error al obtener usuarios: ", error);
+            })
+        },
+        async checkChatExists({ }, { userId, currentUserId }) {
+            try {
+                const response = await axios.get(`http://localhost:3000/api/chats/exist?userId=${userId}&currentUserId=${currentUserId}`);
+                return response.data.exists; // Retorna el booleano directamente
+            } catch (error) {
+                console.error("Error al verificar existencia de chat:", error);
+                return false; // Considera que no existe si hay error
+            }
+        },
     },
     getters: {
         getMessages: (state) => (chatId) => {
@@ -78,6 +111,9 @@ const store = createStore({
         },
         getChats(state) {
             return state.chats;
+        },
+        getUsers(state) {
+            return state.users;
         },
         getCurrentChat(state) {
             return state.currentChat; // Getter para obtener el chat actual

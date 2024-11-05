@@ -8,7 +8,8 @@ export const getAllUsersExceptLoggedIn = async (req, res) => {
     }
 
     try {
-        const users = await User.find({ _id: { $ne: loggedInUserId } }); // Obtén todos los usuarios excepto el que está logueado
+        const users = await User.find({ _id: { $ne: loggedInUserId } }).select('username _id');
+
         res.json(users);
     } catch (error) {
         console.error('Error fetching users:', error);

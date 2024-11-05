@@ -20,6 +20,6 @@ app.use('/api', authRoutes);
 app.use('/api', messageRoutes);
 app.use('/api', chatRoutes);
 
-app.use(['/api', authenticate], userRoutes);
+app.use('/api', userRoutes);
 
 export default app;

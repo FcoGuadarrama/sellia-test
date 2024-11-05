@@ -1,84 +1,90 @@
 <template>
-  <div>
+  <div class="bg-black">
     <h2>Lista de Chats</h2>
     <ul>
-      <li v-for="chat in chats" :key="chat._id" @click="selectChat(chat)">
+      <li v-for="chat in chats" :key="chat._id" @click="selectChat(chat)"> <!-- Llama a selectChat aquí -->
         Chat con {{ chat.participants.map(p => p.username).join(', ') }}
       </li>
     </ul>
-    <input v-model="newUser" placeholder="Nombre de usuario para nuevo chat" />
+
+    <!-- Select para elegir un usuario para iniciar un nuevo chat -->
+    <div>
+      <label for="userSelect">Iniciar chat con:</label>
+      <select id="userSelect" v-model="newUser">
+        <option value="">Selecciona un usuario</option>
+        <option v-for="user in users" :key="user._id" :value="user._id">
+          {{ user.username }}
+        </option>
+      </select>
+    </div>
+
     <button @click="createChat">Iniciar Chat</button>
+    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
   </div>
 </template>
 
 <script setup>
-import {computed, ref, onMounted} from 'vue';
-import {useStore} from 'vuex';
+import { computed, ref, onMounted } from 'vue';
+import { useStore } from 'vuex';
 
 const store = useStore();
 
-// Reactive reference to hold the new user's name
+// Reactive references
 const newUser = ref('');
+const errorMessage = ref('');
 
-// Computed property to get chats from Vuex state
+// Computed properties to get chats and users from Vuex state
 const chats = computed(() => store.state.chats);
+const users = computed(() => store.state.users);
 
-// Lifecycle hook to fetch chats when the component is mounted
 onMounted(() => {
   fetchChats();
+  fetchUsers();
 });
 
-// Function to fetch chats from the store
 const fetchChats = async () => {
   try {
-    await store.dispatch('fetchChats');
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      await store.dispatch('fetchChats', userId);
+    }
   } catch (error) {
     console.error('Error fetching chats:', error);
   }
 };
 
-// Function to create a new chat with the provided username
-const createChat = async () => {
-  if (!newUser.value) return; // Do not proceed if the input is empty
-
+const fetchUsers = async () => {
   try {
-    // Dispatch action to create a new chat with the new user
-    await store.dispatch('createChat', [newUser.value]);
-    newUser.value = ''; // Clear the input after successful chat creation
+    await store.dispatch('fetchUsersToChatWith');
   } catch (error) {
-    console.error('Error al crear chat:', error);
+    console.error('Error fetching users:', error);
   }
 };
 
-// Function to select a chat and set it as the current chat in Vuex state
-const selectChat = (chat) => {
+const createChat = async () => {
+  if (!newUser.value) return;
+
+  try {
+    const userId = localStorage.getItem('userId');
+    const chatExists = await store.dispatch('checkChatExists', { userId: newUser.value, currentUserId: userId });
+
+    if (chatExists) {
+      errorMessage.value = 'Ya existe un chat con este usuario.';
+      return;
+    }
+
+    await store.dispatch('createChat', { userId: newUser.value });
+    newUser.value = '';
+    errorMessage.value = '';
+    await fetchChats();
+  } catch (error) {
+    console.error('Error al crear chat:', error);
+    errorMessage.value = 'Error al crear el chat. Por favor, inténtalo de nuevo.';
+  }
+};
+
+const selectChat = async (chat) => {
   store.commit('setCurrentChat', chat);
+  await store.dispatch('fetchMessages', chat._id);
 };
 </script>
-
-<style scoped>
-/* Add your styles here for better UI */
-h2 {
-  margin-bottom: 1rem;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  cursor: pointer;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  margin: 0.5rem 0;
-}
-
-li:hover {
-  background-color: #f0f0f0;
-}
-
-input {
-  margin-right: 0.5rem;
-}
-</style>

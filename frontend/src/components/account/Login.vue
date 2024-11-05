@@ -55,6 +55,8 @@ const handleLogin = async () => {
     })
 
     localStorage.setItem('token', response.data.token)
+    localStorage.setItem('userId', response.data.userId)
+
 
     await router.push('/')
   } catch (error) {

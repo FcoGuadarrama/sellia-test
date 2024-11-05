@@ -11,6 +11,10 @@ export const register = async (username, password) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ username, password: hashedPassword });
     await user.save();
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    return { token, userId: user._id };
 };
 
 export const login = async (username, password) => {
@@ -19,5 +23,8 @@ export const login = async (username, password) => {
         throw new Error('Credenciales inválidas');
     }
 
-    return jwt.sign({userId: user._id}, process.env.JWT_SECRET, {expiresIn: '1h'});
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Devuelve tanto el token como el ID del usuario
+    return { token, userId: user._id };
 };
