@@ -1,6 +1,7 @@
 import { createStore } from 'vuex';
 import io from 'socket.io-client';
 import axios from 'axios';
+import {nextTick} from "vue";
 
 const socket = io("http://localhost:3000");
 
@@ -15,6 +16,7 @@ const store = createStore({
         chats: [],
         users: [],
         currentChat: null,
+        messageContainer: 'messageContainer',
     },
     mutations: {
         setUsername(state, username) {
@@ -58,8 +60,8 @@ const store = createStore({
         },
         async sendMessage({ commit }, { chatId, message, sender }) {
             try {
-                const response = await axios.post("http://localhost:3000/api/messages", { chatId, message, sender });
-                commit('addMessage', response.data);
+                console.log("mensaje enviado desde el servidor: ", message);
+                socket.emit('sendMessage', { chatId, message, sender, timestamp: Date.now() });
             } catch (error) {
                 console.error("Error al enviar mensaje:", error);
             }
@@ -104,6 +106,14 @@ const store = createStore({
                 return false; // Considera que no existe si hay error
             }
         },
+        scrollToBottom({ state }) {
+            nextTick(() => {
+                const messageContainer = document.getElementById(state.messageContainer);
+                if (messageContainer) {
+                    messageContainer.scrollTop = messageContainer.scrollHeight;
+                }
+            });
+        },
     },
     getters: {
         getMessages: (state) => (chatId) => {
@@ -122,8 +132,9 @@ const store = createStore({
 });
 
 socket.on("receiveMessage", (message) => {
-    const { chatId } = message;
-    store.commit("addMessage", { chatId, message });
+    console.log("Mensaje recibido desde el socket:", message); // Verifica que el mensaje se recibe
+    store.commit("addMessage", message);
+    store.dispatch('scrollToBottom');
 });
 
 export default store;

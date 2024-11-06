@@ -5,10 +5,10 @@ export default (io) => {
         console.log('Client connected');
 
         socket.on('sendMessage', async (data) => {
-            const { username, message } = data;
-            const newMessage = new Message({ username, message });
+            const { chatId, message, sender, timestamp } = data;
+            const newMessage = new Message({ chatId, message, sender, timestamp});
             await newMessage.save();
-            io.emit('receiveMessage', newMessage);
+            io.emit('receiveMessage', data);
         });
 
         socket.on('disconnect', () => {
