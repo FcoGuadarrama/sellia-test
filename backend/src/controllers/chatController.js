@@ -23,7 +23,7 @@ export const createNewChat = async (req, res) => {
         const chat = await createChat(participants);
         res.status(201).json(chat);
     } catch (error) {
-        console.error('Error creating chat:', error); // Log error for debugging
+        console.error('Error creating chat:', error);
         res.status(500).json({ error: 'Error al crear el chat' });
     }
 };
@@ -44,17 +44,17 @@ export const checkChatExists = async (req, res) => {
 };
 
 export const getChats = async (req, res) => {
-     const userId = req.user?._id; // Optional chaining to avoid crashing
+     const userId = req.user?._id;
 
     if (!userId) {
-        return res.status(401).json({ error: 'Usuario no autenticado' }); // Handle unauthenticated user
+        return res.status(401).json({ error: 'Usuario no autenticado' });
     }
 
     try {
         const chats = await getUserChats(userId);
         res.json(chats);
     } catch (error) {
-        console.error('Error fetching chats:', error); // Log error for debugging
+        console.error('Error fetching chats:', error);
         res.status(500).json({ error: 'Error al obtener los chats' });
     }
 };
@@ -62,7 +62,6 @@ export const getChats = async (req, res) => {
 export const getMessagesFromChat = async (req, res) => {
     const { chatId } = req.params;
 
-    // Validate chatId
     if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) {
         return res.status(400).json({ error: 'Invalid chatId format' });
     }
@@ -71,7 +70,7 @@ export const getMessagesFromChat = async (req, res) => {
         const messages = await getChatMessages(chatId);
         res.json(messages);
     } catch (error) {
-        console.error('Error fetching messages:', error); // Log error for debugging
+        console.error('Error fetching messages:', error);
         res.status(500).json({ error: 'Error al obtener mensajes' });
     }
 };

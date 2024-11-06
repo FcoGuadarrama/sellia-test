@@ -1,7 +1,7 @@
-import User from '../models/User.js'; // Asegúrate de importar tu modelo de usuario
+import User from '../models/User.js';
 
 export const getAllUsersExceptLoggedIn = async (req, res) => {
-    const loggedInUserId = req.user?._id; // Asegúrate de que req.user esté definido
+    const loggedInUserId = req.user?._id;
 
     if (!loggedInUserId) {
         return res.status(401).json({ error: 'Usuario no autenticado' });

@@ -84,10 +84,9 @@ const store = createStore({
                     console.error("Error al crear chat:", error);
                 });
         },
-        // Nueva acción para establecer el chat actual
         selectChat({ commit }, chatId) {
-            commit('setCurrentChat', chatId); // Establece el chat actual
-            commit('fetchMessages', chatId); // Opcional: obtener mensajes al seleccionar el chat
+            commit('setCurrentChat', chatId);
+            commit('fetchMessages', chatId);
         },
         fetchUsersToChatWith({ commit }) {
             axios.get('http://localhost:3000/api/users')
@@ -100,10 +99,10 @@ const store = createStore({
         async checkChatExists({ }, { userId, currentUserId }) {
             try {
                 const response = await axios.get(`http://localhost:3000/api/chats/exist?userId=${userId}&currentUserId=${currentUserId}`);
-                return response.data.exists; // Retorna el booleano directamente
+                return response.data.exists;
             } catch (error) {
                 console.error("Error al verificar existencia de chat:", error);
-                return false; // Considera que no existe si hay error
+                return false;
             }
         },
         scrollToBottom({ state }) {
@@ -126,13 +125,13 @@ const store = createStore({
             return state.users;
         },
         getCurrentChat(state) {
-            return state.currentChat; // Getter para obtener el chat actual
+            return state.currentChat;
         }
     }
 });
 
 socket.on("receiveMessage", (message) => {
-    console.log("Mensaje recibido desde el socket:", message); // Verifica que el mensaje se recibe
+    console.log("Mensaje recibido desde el socket:", message);
     store.commit("addMessage", message);
     store.dispatch('scrollToBottom');
 });

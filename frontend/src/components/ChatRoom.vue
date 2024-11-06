@@ -1,10 +1,8 @@
 <template>
   <div class="flex h-screen">
-    <!-- Sidebar -->
     <ChatList @select-chat="selectChat" />
 
 
-    <!-- Chat Messages -->
     <div class="flex-1 p-4 flex flex-col"  v-if="currentChat">
       <div id="messageContainer" class="max-h-full overflow-y-auto flex-1">
         <Messages />

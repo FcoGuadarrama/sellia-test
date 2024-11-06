@@ -16,14 +16,6 @@
         <label for="password1" class="text-surface-900 dark:text-surface-0 font-medium mb-2 block">Password</label>
         <InputText v-model="password" id="password" type="password" placeholder="Password" class="w-full mb-4"/>
 
-        <!--        <div class="flex items-center justify-between mb-12">-->
-        <!--          <div class="flex items-center">-->
-        <!--            <Checkbox id="rememberme1" v-model="checked1" :binary="true" class="mr-2" />-->
-        <!--            <label for="rememberme1">Remember me</label>-->
-        <!--          </div>-->
-        <!--          <a class="font-medium no-underline ml-2 text-primary text-right cursor-pointer">Forgot password?</a>-->
-        <!--        </div>-->
-
         <Button label="Sign In" @click="handleLogin" icon="pi pi-user" class="w-full"/>
       </div>
     </div>
