@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "primevue": "^4.2.1",
-    "vue-router": "^4.0.13"
-  }
-}
