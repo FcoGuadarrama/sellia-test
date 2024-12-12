@@ -1,13 +1,3 @@
-
-# Sellia Chat
-
-Prueba para desarrollador en Sellia
-
-
-
-
-
-
 ## Environment Variables
 
 Para correr estos proyectos es necesario tener estas variables de entorno correctamente, se subieron a GIT por ser un proyecto de prueba:
